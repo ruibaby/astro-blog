@@ -8,6 +8,10 @@ import {
   ContentHaloRunV1alpha1TagApi,
   ContentHaloRunV1alpha1SinglePageApi,
   ThemeHaloRunV1alpha1ThemeApi,
+  V1alpha1ConfigMapApi,
+  V1alpha1MenuApi,
+  V1alpha1MenuItemApi,
+  V1alpha1UserApi,
 } from "@halo-dev/api-client";
 import type { AxiosError, AxiosInstance } from "axios";
 import axios from "axios";
@@ -69,7 +73,11 @@ const apiClient = setupApiClient(axiosInstance);
 function setupApiClient(axios: AxiosInstance) {
   return {
     extension: {
+      configMap: new V1alpha1ConfigMapApi(undefined, baseURL, axios),
+      user: new V1alpha1UserApi(undefined, baseURL, axios),
       theme: new ThemeHaloRunV1alpha1ThemeApi(undefined, baseURL, axios),
+      menu: new V1alpha1MenuApi(undefined, baseURL, axios),
+      menuItem: new V1alpha1MenuItemApi(undefined, baseURL, axios),
       post: new ContentHaloRunV1alpha1PostApi(undefined, baseURL, axios),
       singlePage: new ContentHaloRunV1alpha1SinglePageApi(
         undefined,
@@ -83,6 +91,7 @@ function setupApiClient(axios: AxiosInstance) {
       ),
       tag: new ContentHaloRunV1alpha1TagApi(undefined, baseURL, axios),
     },
+    // custom endpoints
     user: new ApiConsoleHaloRunV1alpha1UserApi(undefined, baseURL, axios),
     theme: new ApiConsoleHaloRunV1alpha1ThemeApi(undefined, baseURL, axios),
     post: new ApiConsoleHaloRunV1alpha1PostApi(undefined, baseURL, axios),

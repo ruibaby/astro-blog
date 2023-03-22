@@ -1,0 +1,19 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Card from "../components/Card.astro";
+import { apiClient } from "../utils/api-client";
+import PostEntry from "../components/PostEntry.astro";
+
+const { data: posts } = await apiClient.post.listPosts({
+  page: 0,
+  size: 0,
+  labelSelector: [`content.halo.run/published=true`],
+  visible: "PUBLIC",
+});
+---
+
+<Layout>
+  <div>
+    <PostEntry posts={posts.items} />
+  </div>
+</Layout>

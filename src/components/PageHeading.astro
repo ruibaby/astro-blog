@@ -1,0 +1,22 @@
+---
+export interface Prop {
+  title: string;
+  subtitle: string;
+}
+
+const { title, subtitle } = Astro.props;
+---
+
+<div class="animated fadeInDown m-[30px] mt-[20px] border-b border-gray-200">
+  <div class="flex flex-col pb-3">
+    <div class="flex flex-wrap items-end">
+      <h3 class="text-xl font-medium leading-6 text-gray-900">
+        {title}
+      </h3>
+      {subtitle && <span class="ml-2 text-sm text-gray-500">{subtitle}</span>}
+    </div>
+    <div>
+      <slot />
+    </div>
+  </div>
+</div>

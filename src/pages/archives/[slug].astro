@@ -1,0 +1,132 @@
+---
+import { ContentWrapper, ListedPost } from "@halo-dev/api-client";
+import PageHeading from "../../components/PageHeading.astro";
+import Layout from "../../layouts/Layout.astro";
+import { apiClient } from "../../utils/api-client";
+import "github-markdown-css/github-markdown-light.css";
+import "highlight.js/styles/github.css";
+
+interface Post extends ListedPost {
+  content: ContentWrapper;
+}
+
+export interface Props {
+  posts: Post;
+}
+
+export async function getStaticPaths() {
+  const { data: posts } = await apiClient.post.listPosts({
+    page: 0,
+    size: 0,
+    labelSelector: [`content.halo.run/published=true`],
+    visible: "PUBLIC",
+  });
+
+  const result: Post[] = [];
+
+  for (let i = 0; i < posts.items.length; i++) {
+    const post = posts.items[i];
+    const { data } = await apiClient.post.fetchPostHeadContent({
+      name: post.post.metadata.name,
+    });
+    result.push({
+      ...post,
+      content: data,
+    });
+  }
+
+  return result.map((post) => {
+    return {
+      params: {
+        slug: post.post.spec.slug,
+      },
+      props: {
+        post: post,
+      },
+    };
+  });
+}
+
+const { post } = Astro.props;
+---
+
+<script>
+  import hljs from "highlight.js";
+  document.addEventListener("DOMContentLoaded", async function () {
+    document.querySelectorAll("pre code").forEach((el) => {
+      hljs.highlightElement(el as HTMLElement);
+    });
+  });
+</script>
+
+<Layout title={post.post.spec.title}>
+  <PageHeading title={post.post.spec.title}>
+    <div class="post-info mt-2" x-data="posts">
+      <div class="meta">
+        <div class="info">
+          <i class="i-mdi-calendar-month-outline h-3 w-3"></i>
+          <span>
+            {post.post.spec.publishTime}
+          </span>
+          <i class="i-mdi-eye h-3 w-3"></i>
+          <span>{post.stats.visit}</span>
+          <i class="i-mdi-comment-outline h-3 w-3"></i>
+          <a href={`/archives/${post.post.spec.slug}`}>
+            {post.stats.approvedComment}
+          </a>
+          <div class="inline-block cursor-pointer hover:text-red-700">
+            <i class="i-mdi-heart-outline h-3 w-3"></i>
+            <span>{post.stats.upvote}</span>
+          </div>
+          {
+            post.categories.length > 0 && (
+              <div class="inline-block">
+                <i class="i-mdi-folder-outline h-3 w-3" />
+                {post.categories.map((category) => (
+                  <a
+                    href={category.status.permalink}
+                    title={category.spec.displayName}
+                  >
+                    {category.spec.displayName}
+                  </a>
+                ))}
+              </div>
+            )
+          }
+          {
+            post.tags.length > 0 && (
+              <div class="inline-block">
+                <i class="i-mdi-tag h-3 w-3" />
+                {post.tags.map((tag) => (
+                  <a href={tag.status.permalink} title={tag.spec.displayName}>
+                    {tag.spec.displayName}
+                  </a>
+                ))}
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </PageHeading>
+  <div class="post-page">
+    <div class="post animated fadeInDown">
+      <div
+        id="post-content"
+        class="post-content markdown-body"
+        set:html={post.content.content}
+      />
+    </div>
+    <div class="pagination flex items-center justify-between">
+      <a class="btn" role="navigation"> 上一篇</a>
+      <a class="btn" role="navigation"> 下一篇</a>
+    </div>
+    <div id="comment_widget" style="margin: 30px">
+      <halo:comment
+        group="content.halo.run"
+        kind="Post"
+        th:attr="name=${post.metadata.name}"
+        colorScheme="'light'"></halo:comment>
+    </div>
+  </div>
+</Layout>

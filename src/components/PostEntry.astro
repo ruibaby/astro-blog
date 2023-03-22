@@ -1,0 +1,69 @@
+---
+import type { ListedPost } from "@halo-dev/api-client";
+export interface Props {
+  posts: ListedPost[];
+}
+
+const { posts } = Astro.props;
+---
+
+{
+  posts.map((post) => (
+    <div class="post animated fadeInDown">
+      <div class="post-title">
+        <h3 class="font-medium">
+          <a
+            href={`/archives/${post.post.spec.slug}`}
+            title={post.post.spec.title}
+          >
+            {post.post.spec.title}
+          </a>
+        </h3>
+      </div>
+      <div class="post-content text-sm text-black/50">
+        <p class="py-2.5">{post.post.status.excerpt}...</p>
+      </div>
+      <div class="post-info border-b border-b-[#f2f2f2] pb-[30px]">
+        <div class="meta">
+          <div class="info">
+            <i class="i-mdi-calendar-month-outline h-3 w-3" />
+            <span>{post.post.spec.publishTime}</span>
+            <i class="i-mdi-eye h-3 w-3" />
+            <span>{post.stats.visit}</span>
+            <i class="i-mdi-comment-outline h-3 w-3" />
+            <a href={`/archives/${post.post.spec.slug}`}>
+              {post.stats.approvedComment}
+            </a>
+            <div class="inline-block cursor-pointer hover:text-red-700">
+              <i class="i-mdi-heart-outline h-3 w-3" />
+              <span>{post.stats.upvote}</span>
+            </div>
+            {post.categories.length > 0 && (
+              <div class="inline-block">
+                <i class="i-mdi-folder-outline h-3 w-3" />
+                {post.categories.map((category) => (
+                  <a
+                    href={category.status.permalink}
+                    title={category.spec.displayName}
+                  >
+                    {category.spec.displayName}
+                  </a>
+                ))}
+              </div>
+            )}
+            {post.tags.length > 0 && (
+              <div class="inline-block">
+                <i class="i-mdi-tag h-3 w-3" />
+                {post.tags.map((tag) => (
+                  <a href={tag.status.permalink} title={tag.spec.displayName}>
+                    {tag.spec.displayName}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  ))
+}

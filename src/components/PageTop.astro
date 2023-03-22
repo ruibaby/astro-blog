@@ -1,0 +1,59 @@
+---
+import { MenuItem } from "@halo-dev/api-client/index";
+import { apiClient } from "../utils/api-client";
+
+let menuItems: MenuItem[] = [];
+
+async function fetchMenuItem() {
+  const { data: configMap } =
+    await apiClient.extension.configMap.getv1alpha1ConfigMap({
+      name: "system",
+    });
+
+  const menuConfig = JSON.parse(configMap.data?.menu || "{}");
+
+  const { data: menu } = await apiClient.extension.menu.getv1alpha1Menu({
+    name: menuConfig.primary,
+  });
+
+  const { data } = await apiClient.extension.menuItem.listv1alpha1MenuItem({
+    page: 0,
+    size: 0,
+    fieldSelector: [`name=(${menu.spec.menuItems.join(",")})`],
+  });
+
+  menuItems = data.items;
+}
+
+await fetchMenuItem();
+---
+
+<div class="page-top animated fadeInDown">
+  <div
+    id="nav"
+    class="nav ml-[30px] mr-4 flex h-full flex-1 flex-nowrap items-center gap-6 overflow-x-auto whitespace-nowrap text-sm"
+  >
+    {
+      menuItems.map((menuItem) => (
+        <div class="nav-item relative inline-flex h-full items-center text-black/70 transition-all hover:text-[#4786D6]">
+          <a href={menuItem.status.href} target={menuItem.spec.target}>
+            {menuItem.status.displayName}
+          </a>
+        </div>
+      ))
+    }
+  </div>
+  <div class="information gap-4">
+    <!-- https://github.com/halo-sigs/plugin-search-widget -->
+    <div
+      onclick="SearchWidget.open()"
+      class="flex h-[32px] w-[32px] cursor-pointer items-center justify-center rounded-full border text-gray-500 transition-all hover:bg-gray-600 hover:text-white"
+    >
+      <i class="i-mdi-text-box-search h-4 w-4"></i>
+    </div>
+    <!-- TODO -->
+    <!-- <div class="avatar">
+      <img src="${settings.icon!'${user.avatar!}'}" alt="Logo" />
+    </div> -->
+  </div>
+</div>

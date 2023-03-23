@@ -1,0 +1,84 @@
+---
+import { ContentWrapper, ListedSinglePage } from "@halo-dev/api-client/index";
+import PageHeading from "../components/PageHeading.astro";
+import Layout from "../layouts/Layout.astro";
+import { apiClient } from "../utils/api-client";
+import { Comment } from "@halo-dev/comment-widget";
+import "@halo-dev/comment-widget/dist/style.css";
+import "github-markdown-css/github-markdown-light.css";
+
+interface Page extends ListedSinglePage {
+  content: ContentWrapper;
+}
+
+export async function getStaticPaths() {
+  const { data: pages } = await apiClient.singlePage.listSinglePages({
+    page: 0,
+    size: 0,
+    labelSelector: [`content.halo.run/published=true`],
+    visible: "PUBLIC",
+  });
+
+  const result: Page[] = [];
+
+  for (let i = 0; i < pages.items.length; i++) {
+    const page = pages.items[i];
+    const { data } = await apiClient.singlePage.fetchSinglePageReleaseContent({
+      name: page.page.metadata.name,
+    });
+    result.push({
+      ...page,
+      content: data,
+    });
+  }
+
+  return result.map((page) => {
+    return {
+      params: {
+        slug: page.page.spec.slug,
+      },
+      props: {
+        page: page,
+      },
+    };
+  });
+}
+
+const { page } = Astro.props;
+---
+
+<Layout>
+  <PageHeading title={page.page.spec.title}>
+    <div class="post-info mt-2">
+      <div class="meta">
+        <div class="info">
+          <i class="i-mdi-calendar-month-outline h-3 w-3"></i>
+          <span class="date">
+            {page.page.spec.publishTime}
+          </span>
+          <i class="i-mdi-comment-outline h-3 w-3"></i>
+          <a href="#comment_widget">
+            {page.stats.visit}
+          </a>
+        </div>
+      </div>
+    </div>
+  </PageHeading>
+  <div class="post-page">
+    <div class="post animated fadeInDown">
+      <div
+        id="post-content"
+        class="post-content markdown-body"
+        set:html={page.content.content}
+      />
+    </div>
+    <div id="comment_widget" style="margin: 30px">
+      <Comment
+        client:only
+        kind="SinglePage"
+        group="content.halo.run"
+        name={page.page.metadata.name}
+      />
+    </div>
+  </div>
+</Layout>

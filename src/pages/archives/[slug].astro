@@ -28,7 +28,7 @@ export async function getStaticPaths() {
 
   for (let i = 0; i < posts.items.length; i++) {
     const post = posts.items[i];
-    const { data } = await apiClient.post.fetchPostHeadContent({
+    const { data } = await apiClient.post.fetchPostReleaseContent({
       name: post.post.metadata.name,
     });
     result.push({

@@ -1,0 +1,61 @@
+---
+import { ListedPost, Tag } from "@halo-dev/api-client";
+import PageHeading from "../../components/PageHeading.astro";
+import PostEntry from "../../components/PostEntry.astro";
+import Layout from "../../layouts/Layout.astro";
+import { apiClient } from "../../utils/api-client";
+
+export interface TagWithPosts {
+  tag: Tag;
+  posts: ListedPost[];
+}
+
+export async function getStaticPaths() {
+  const { data: tags } =
+    await apiClient.extension.tag.listcontentHaloRunV1alpha1Tag({
+      page: 0,
+      size: 0,
+    });
+
+  const result: TagWithPosts[] = [];
+
+  for (const tag of tags.items) {
+    const { data: posts } = await apiClient.post.listPosts({
+      page: 0,
+      size: 0,
+      labelSelector: [`content.halo.run/published=true`],
+      visible: "PUBLIC",
+      tag: [tag.metadata.name],
+    });
+
+    result.push({
+      tag: tag,
+      posts: posts.items,
+    });
+  }
+
+  return result.map((data) => {
+    return {
+      params: {
+        slug: data.tag.spec.slug,
+      },
+      props: {
+        posts: data.posts,
+        tag: data.tag,
+      },
+    };
+  });
+}
+
+const { posts, tag } = Astro.props;
+---
+
+<Layout>
+  <PageHeading
+    title={`标签：${tag.spec.displayName}`}
+    subtitle={`${posts.length} 篇文章`}
+  />
+  <div>
+    <PostEntry posts={posts} />
+  </div>
+</Layout>

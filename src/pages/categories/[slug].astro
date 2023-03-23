@@ -1,0 +1,61 @@
+---
+import { Category, ListedPost } from "@halo-dev/api-client";
+import PageHeading from "../../components/PageHeading.astro";
+import PostEntry from "../../components/PostEntry.astro";
+import Layout from "../../layouts/Layout.astro";
+import { apiClient } from "../../utils/api-client";
+
+export interface CategoryWithPosts {
+  category: Category;
+  posts: ListedPost[];
+}
+
+export async function getStaticPaths() {
+  const { data: categories } =
+    await apiClient.extension.category.listcontentHaloRunV1alpha1Category({
+      page: 0,
+      size: 0,
+    });
+
+  const result: CategoryWithPosts[] = [];
+
+  for (const category of categories.items) {
+    const { data: posts } = await apiClient.post.listPosts({
+      page: 0,
+      size: 0,
+      labelSelector: [`content.halo.run/published=true`],
+      visible: "PUBLIC",
+      category: [category.metadata.name],
+    });
+
+    result.push({
+      category: category,
+      posts: posts.items,
+    });
+  }
+
+  return result.map((data) => {
+    return {
+      params: {
+        slug: data.category.spec.slug,
+      },
+      props: {
+        posts: data.posts,
+        category: data.category,
+      },
+    };
+  });
+}
+
+const { posts, category } = Astro.props;
+---
+
+<Layout>
+  <PageHeading
+    title={`分类：${category.spec.displayName}`}
+    subtitle={`${posts.length} 篇文章`}
+  />
+  <div>
+    <PostEntry posts={posts} />
+  </div>
+</Layout>

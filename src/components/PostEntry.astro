@@ -43,7 +43,7 @@ const { posts } = Astro.props;
                 <i class="i-mdi-folder-outline h-3 w-3" />
                 {post.categories.map((category) => (
                   <a
-                    href={category.status.permalink}
+                    href={`/categories/${category.spec.slug}`}
                     title={category.spec.displayName}
                   >
                     {category.spec.displayName}
@@ -55,7 +55,10 @@ const { posts } = Astro.props;
               <div class="inline-block">
                 <i class="i-mdi-tag h-3 w-3" />
                 {post.tags.map((tag) => (
-                  <a href={tag.status.permalink} title={tag.spec.displayName}>
+                  <a
+                    href={`/tags/${tag.spec.slug}`}
+                    title={tag.spec.displayName}
+                  >
                     {tag.spec.displayName}
                   </a>
                 ))}

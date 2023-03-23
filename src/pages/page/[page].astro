@@ -1,0 +1,22 @@
+---
+import PostEntry from "../../components/PostEntry.astro";
+import Layout from "../../layouts/Layout.astro";
+import { apiClient } from "../../utils/api-client";
+
+export async function getStaticPaths({ paginate }) {
+  const { data: posts } = await apiClient.post.listPosts({
+    page: 0,
+    size: 0,
+    labelSelector: [`content.halo.run/published=true`],
+    visible: "PUBLIC",
+  });
+  return paginate(posts.items, { pageSize: 10 });
+}
+const { page } = Astro.props;
+---
+
+<Layout>
+  <div>
+    <PostEntry posts={page.data} />
+  </div>
+</Layout>

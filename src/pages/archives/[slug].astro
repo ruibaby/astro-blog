@@ -5,6 +5,8 @@ import Layout from "../../layouts/Layout.astro";
 import { apiClient } from "../../utils/api-client";
 import "github-markdown-css/github-markdown-light.css";
 import "highlight.js/styles/github.css";
+import { Comment } from "@halo-dev/comment-widget";
+import "@halo-dev/comment-widget/dist/style.css";
 
 interface Post extends ListedPost {
   content: ContentWrapper;
@@ -122,11 +124,12 @@ const { post } = Astro.props;
       <a class="btn" role="navigation"> 下一篇</a>
     </div>
     <div id="comment_widget" style="margin: 30px">
-      <halo:comment
-        group="content.halo.run"
+      <Comment
+        client:only
         kind="Post"
-        th:attr="name=${post.metadata.name}"
-        colorScheme="'light'"></halo:comment>
+        group="content.halo.run"
+        name={post.post.metadata.name}
+      />
     </div>
   </div>
 </Layout>
